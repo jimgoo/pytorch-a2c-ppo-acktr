@@ -57,6 +57,8 @@ def main():
     torch.set_num_threads(1)
     device = torch.device("cuda:0" if args.cuda else "cpu")
 
+    print(args)
+
     if args.vis:
         from visdom import Visdom
         viz = Visdom(port=args.port)
@@ -69,6 +71,8 @@ def main():
         base_kwargs={'recurrent': args.recurrent_policy})
     actor_critic.to(device)
 
+    print('\n' + str(actor_critic))
+
     if args.algo == 'a2c':
         agent = algo.A2C_ACKTR(actor_critic, args.value_loss_coef,
                                args.entropy_coef, lr=args.lr,
@@ -77,15 +81,14 @@ def main():
     elif args.algo == 'ppo':
         agent = algo.PPO(actor_critic, args.clip_param, args.ppo_epoch, args.num_mini_batch,
                          args.value_loss_coef, args.entropy_coef, lr=args.lr,
-                               eps=args.eps,
-                               max_grad_norm=args.max_grad_norm)
+                         eps=args.eps, max_grad_norm=args.max_grad_norm)
     elif args.algo == 'acktr':
         agent = algo.A2C_ACKTR(actor_critic, args.value_loss_coef,
                                args.entropy_coef, acktr=True)
 
     rollouts = RolloutStorage(args.num_steps, args.num_processes,
-                        envs.observation_space.shape, envs.action_space,
-                        actor_critic.recurrent_hidden_state_size)
+                              envs.observation_space.shape, envs.action_space,
+                              actor_critic.recurrent_hidden_state_size)
 
     obs = envs.reset()
     rollouts.obs[0].copy_(obs)
@@ -167,8 +170,8 @@ def main():
                        np.mean(episode_rewards),
                        np.median(episode_rewards),
                        np.min(episode_rewards),
-                       np.max(episode_rewards), dist_entropy,
-                       value_loss, action_loss))
+                       np.max(episode_rewards),
+                       dist_entropy, value_loss, action_loss))
 
         if (args.eval_interval is not None
                 and len(episode_rewards) > 1
