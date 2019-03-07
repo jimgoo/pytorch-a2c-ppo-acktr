@@ -1,4 +1,4 @@
 gym
 matplotlib
 pybullet
-git+git://github.com/openai/baselines.git@8e56dd
+git+git://github.com/openai/baselines.git
